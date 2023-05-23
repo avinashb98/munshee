@@ -94,9 +94,10 @@ func (a accountInmemory) Get(username string, name string) (*entity.Account, err
 	}
 	var account entity.Account
 	accountFound := false
-	for _, account := range userAccounts {
-		if account.Name == name {
+	for _, a := range userAccounts {
+		if a.Name == name {
 			accountFound = true
+			account = a
 			break
 		}
 	}
