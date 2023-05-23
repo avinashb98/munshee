@@ -8,9 +8,9 @@ type User interface {
 }
 
 type Account interface {
-	GetBalance(id string) (float64, error)
-	CreateAccount(id string, userID string, name string) (entity.Account, error)
-	Get(id string) (entity.Account, error)
+	CreateAccount(username string, name string) (*entity.Account, error)
+	Get(username string, name string) (*entity.Account, error)
+	GetAll(username string) ([]entity.Account, error)
 }
 
 type Txn interface {

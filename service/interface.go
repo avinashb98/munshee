@@ -4,13 +4,13 @@ import "github.com/avinashb98/munshee/entity"
 
 type User interface {
 	CreateUser(username string, name string, email string) (*entity.UserOut, error)
-	Get(id string) (*entity.UserOut, error)
+	Get(username string) (*entity.UserOut, error)
 }
 
 type Account interface {
-	GetBalance(id string) (float64, error)
-	CreateAccount(id string, userID string, name string) (entity.Account, error)
-	Get(id string) (entity.Account, error)
+	CreateAccount(username string, name string) (*entity.AccountOut, error)
+	Get(username string, name string) (*entity.AccountOut, error)
+	GetAll(username string) ([]entity.AccountOut, error)
 }
 
 type Txn interface {

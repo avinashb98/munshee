@@ -51,19 +51,59 @@ func NewUserInmemory() User {
 
 type accountInmemory struct{}
 
-func (a accountInmemory) GetBalance(id string) (float64, error) {
-	//TODO implement me
-	panic("implement me")
+func (a accountInmemory) GetAll(username string) ([]entity.Account, error) {
+	userAccounts, userFound := accountStore[username]
+
+	if !userFound {
+		return nil, fmt.Errorf("no account associated with user %s", username)
+	}
+	return userAccounts, nil
 }
 
-func (a accountInmemory) CreateAccount(id string, userID string, name string) (entity.Account, error) {
-	//TODO implement me
-	panic("implement me")
+var accountStore = make(map[string][]entity.Account)
+
+func (a accountInmemory) CreateAccount(username string, name string) (*entity.Account, error) {
+	userAccounts, userFound := accountStore[username]
+
+	if !userFound {
+		accountStore[username] = make([]entity.Account, 0)
+		userAccounts = accountStore[username]
+	}
+
+	for _, account := range userAccounts {
+		if account.Name == name {
+			return nil, fmt.Errorf("account with name %s already exists for user", name)
+		}
+	}
+
+	newAccount := entity.Account{
+		ID:       uuid.New().String(),
+		Name:     name,
+		Username: username,
+		Balance:  0,
+	}
+	accountStore[username] = append(accountStore[username], newAccount)
+	return &newAccount, nil
 }
 
-func (a accountInmemory) Get(id string) (entity.Account, error) {
-	//TODO implement me
-	panic("implement me")
+func (a accountInmemory) Get(username string, name string) (*entity.Account, error) {
+	userAccounts, userFound := accountStore[username]
+
+	if !userFound {
+		return nil, fmt.Errorf("no account associated with user %s", username)
+	}
+	var account entity.Account
+	accountFound := false
+	for _, account := range userAccounts {
+		if account.Name == name {
+			accountFound = true
+			break
+		}
+	}
+	if !accountFound {
+		return nil, fmt.Errorf("no account with name %s associated with user %s", name, username)
+	}
+	return &account, nil
 }
 
 func NewAccountInmemory() Account {

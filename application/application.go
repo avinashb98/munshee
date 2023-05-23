@@ -22,9 +22,13 @@ func Get() *Application {
 	c := config.New()
 	userRepo := repository.NewUserInmemory()
 	userSvc := service.NewUserService(userRepo)
+
+	accountRepo := repository.NewAccountInmemory()
+	accountSvc := service.NewAccountService(accountRepo, userSvc)
 	application := Application{
 		Services: Services{
-			User: userSvc,
+			User:    userSvc,
+			Account: accountSvc,
 		},
 		Config: c,
 	}

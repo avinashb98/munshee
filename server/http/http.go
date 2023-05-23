@@ -23,6 +23,14 @@ func StartServer(application *application.Application) {
 		userRoutes.GET("/:id", userHandler.GetUser)
 	}
 
+	accountHandler := NewAccountHandler(application.Services.Account)
+	accountRoutes := router.Group("/api/v1/accounts")
+	{
+		accountRoutes.POST("/", accountHandler.CreateAccount)
+		accountRoutes.GET("/:username/:name", accountHandler.GetAccount)
+		accountRoutes.GET("/:username", accountHandler.GetAllAccounts)
+	}
+
 	err := router.Run(":" + application.Config.Server.Port)
 	if err != nil {
 		log.Panic(err)
