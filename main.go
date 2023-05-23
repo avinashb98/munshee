@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"github.com/avinashb98/munshee/application"
+	"github.com/avinashb98/munshee/server"
+)
 
 func main() {
-	fmt.Println("Hello, Munshee!")
+	app := application.Get()
+	server.StartHTTP(app)
 }

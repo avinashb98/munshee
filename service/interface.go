@@ -3,8 +3,8 @@ package service
 import "github.com/avinashb98/munshee/entity"
 
 type User interface {
-	CreateUser(username string, name string, email string) (entity.User, error)
-	Get(id string) (entity.User, error)
+	CreateUser(username string, name string, email string) (*entity.User, error)
+	Get(id string) (*entity.User, error)
 }
 
 type Account interface {
