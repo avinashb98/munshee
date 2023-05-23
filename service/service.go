@@ -29,12 +29,21 @@ type user struct {
 	userRepository repository.User
 }
 
-func (u user) CreateUser(username string, name string, email string) (*entity.User, error) {
-	return u.userRepository.CreateUser(username, name, email)
+func (u user) CreateUser(username string, name string, email string) (*entity.UserOut, error) {
+
+	user, err := u.userRepository.CreateUser(username, name, email)
+	if err != nil {
+		return nil, err
+	}
+	return user.ToOut(), nil
 }
 
-func (u user) Get(id string) (*entity.User, error) {
-	return u.userRepository.Get(id)
+func (u user) Get(id string) (*entity.UserOut, error) {
+	user, err := u.userRepository.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	return user.ToOut(), nil
 }
 
 func NewUserService(userRepository repository.User) User {

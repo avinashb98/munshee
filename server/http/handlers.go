@@ -37,8 +37,8 @@ func (u userHandler) CreateUser(c *gin.Context) {
 	})
 }
 
-func (u userHandler) parseCreateUserInput(c *gin.Context) (*entity.CreateUserInput, error) {
-	var payload entity.CreateUserInput
+func (u userHandler) parseCreateUserInput(c *gin.Context) (*entity.UserIn, error) {
+	var payload entity.UserIn
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		return nil, fmt.Errorf("invalid input: %w", err)
 	}
