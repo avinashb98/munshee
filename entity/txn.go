@@ -2,15 +2,49 @@ package entity
 
 import "github.com/google/uuid"
 
+type TxnIn struct {
+	Description string   `json:"description"`
+	ToAccount   *string  `json:"to_account"`
+	FromAccount *string  `json:"from_account"`
+	Amount      float64  `json:"amount"`
+	Tags        []string `json:"tags"`
+	Username    string   `json:"username"`
+}
+
 type Txn struct {
 	ID          string
 	Description string
 	ToAccount   *string
 	FromAccount *string
-	UserID      string
+	Username    string
 	Amount      float64
-	Tag         []Tag
-	Timestamp   int64
+	Tags        []string
+	CreatedAt   int64
+	UpdatedAt   int64
+}
+
+func (t Txn) ToOut() *TxnOut {
+	return &TxnOut{
+		Description: t.Description,
+		ToAccount:   t.ToAccount,
+		FromAccount: t.FromAccount,
+		Amount:      t.Amount,
+		Tags:        t.Tags,
+		Username:    t.Username,
+		CreatedAt:   t.CreatedAt,
+		UpdatedAt:   t.UpdatedAt,
+	}
+}
+
+type TxnOut struct {
+	Description string   `json:"description"`
+	ToAccount   *string  `json:"to_account"`
+	FromAccount *string  `json:"from_account"`
+	Amount      float64  `json:"amount"`
+	Tags        []string `json:"tags"`
+	Username    string   `json:"username"`
+	CreatedAt   int64    `json:"created_at"`
+	UpdatedAt   int64    `json:"updated_at"`
 }
 
 type TxnOption func(*Txn)
@@ -35,7 +69,11 @@ func WithFromAccount(fromAccount *string) TxnOption {
 
 func WithTags(tags ...Tag) TxnOption {
 	return func(t *Txn) {
-		t.Tag = tags
+		var tagsStr []string
+		for _, tag := range tags {
+			tagsStr = append(tagsStr, tag.Name)
+		}
+		t.Tags = tagsStr
 	}
 }
 
@@ -46,7 +84,7 @@ func WithAmount(amount float64) TxnOption {
 }
 
 func NewTxn(userID string, opts ...TxnOption) Txn {
-	txn := Txn{UserID: userID, ID: uuid.New().String()}
+	txn := Txn{Username: userID, ID: uuid.New().String()}
 
 	for _, opt := range opts {
 		opt(&txn)

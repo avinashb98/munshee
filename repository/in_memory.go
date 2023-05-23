@@ -113,23 +113,80 @@ func NewAccountInmemory() Account {
 
 type txnInmemory struct{}
 
-func (t txnInmemory) CreateTxn(txn entity.Txn) (entity.Txn, error) {
-	//TODO implement me
-	panic("implement me")
+var txnStore = make(map[string][]entity.Txn)
+
+func (t txnInmemory) CreateTxn(txnIn entity.TxnIn) (*entity.Txn, error) {
+	_, userFound := accountStore[txnIn.Username]
+	if !userFound {
+		txnStore[txnIn.Username] = make([]entity.Txn, 0)
+	}
+
+	newTxn := entity.Txn{
+		ID:          uuid.New().String(),
+		Username:    txnIn.Username,
+		FromAccount: txnIn.FromAccount,
+		ToAccount:   txnIn.ToAccount,
+		Amount:      txnIn.Amount,
+		CreatedAt:   time.Now().Unix(),
+		UpdatedAt:   time.Now().Unix(),
+		Description: txnIn.Description,
+		Tags:        txnIn.Tags,
+	}
+	txnStore[txnIn.Username] = append(txnStore[txnIn.Username], newTxn)
+	return &newTxn, nil
 }
 
-func (t txnInmemory) Get(id string) (entity.Txn, error) {
-	//TODO implement me
-	panic("implement me")
+func (t txnInmemory) Get(username string, id string) (*entity.Txn, error) {
+	txns, found := txnStore[username]
+	if !found {
+		return nil, fmt.Errorf("no txn associated with user %s", username)
+	}
+	var txn entity.Txn
+	txnFound := false
+	for _, t := range txns {
+		if t.ID == id {
+			txnFound = true
+			txn = t
+			break
+		}
+	}
+	if !txnFound {
+		return nil, fmt.Errorf("no txn with id %s associated with user %s", id, username)
+	}
+	return &txn, nil
 }
 
-func (t txnInmemory) GetAll(userID string) ([]entity.Txn, error) {
-	//TODO implement me
-	panic("implement me")
+func (t txnInmemory) GetAll(username string) ([]entity.Txn, error) {
+	txns, found := txnStore[username]
+	if !found {
+		return nil, fmt.Errorf("no txn associated with user %s", username)
+	}
+	return txns, nil
 }
 
-func (t txnInmemory) UpdateTags(id string, tags ...entity.Tag) (entity.Txn, error) {
-	panic("implement me")
+func (t txnInmemory) UpdateTags(username string, id string, tags ...string) (*entity.Txn, error) {
+	txns, found := txnStore[username]
+	if !found {
+		return nil, fmt.Errorf("no txn associated with user %s", username)
+	}
+	var txn entity.Txn
+	txnFound := false
+	for _, t := range txns {
+		if t.ID == id {
+			txnFound = true
+			txn = t
+			break
+		}
+	}
+	if !txnFound {
+		return nil, fmt.Errorf("no txn with id %s associated with user %s", id, username)
+	}
+	var tagsStr []string
+	for _, tag := range tags {
+		tagsStr = append(tagsStr, tag)
+	}
+	txn.Tags = tagsStr
+	return &txn, nil
 }
 
 func NewTxnInmemory() Txn {
@@ -138,8 +195,50 @@ func NewTxnInmemory() Txn {
 
 type tagInmemory struct{}
 
-func (t tagInmemory) CreateTag(name string) (entity.Tag, error) {
-	panic("implement me")
+var tagStore = make([]entity.Tag, 0)
+
+func (t tagInmemory) CreateTag(name string) (*entity.Tag, error) {
+	for _, tag := range tagStore {
+		if tag.Name == name {
+			return nil, fmt.Errorf("tag with name %s already exists", name)
+		}
+	}
+	newTag := entity.Tag{
+		ID:   uuid.New().String(),
+		Name: name,
+	}
+	tagStore = append(tagStore, newTag)
+	return &newTag, nil
+}
+
+func (t tagInmemory) get(name string) (*entity.Tag, bool) {
+
+	for _, tag := range tagStore {
+		if tag.Name == name {
+			return &tag, true
+		}
+	}
+	return nil, false
+}
+
+func (t tagInmemory) UpsertTags(names ...string) ([]entity.Tag, error) {
+	var uniqueTags []entity.Tag
+	for _, name := range names {
+		tag, found := t.get(name)
+		var err error
+		if !found {
+			tag, err = t.CreateTag(name)
+			if err != nil {
+				return nil, err
+			}
+		}
+		uniqueTags = append(uniqueTags, *tag)
+	}
+	return uniqueTags, nil
+}
+
+func (t tagInmemory) GetAll() ([]entity.Tag, error) {
+	return tagStore, nil
 }
 
 func NewTagInmemory() Tag {

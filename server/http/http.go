@@ -31,6 +31,20 @@ func StartServer(application *application.Application) {
 		accountRoutes.GET("/:username", accountHandler.GetAllAccounts)
 	}
 
+	txnHandler := NewTxnHandler(application.Services.Txn)
+	txnRoutes := router.Group("/api/v1/txns")
+	{
+		txnRoutes.POST("/", txnHandler.CreateTxn)
+		txnRoutes.GET("/:username/:id", txnHandler.Get)
+		txnRoutes.GET("/:username", txnHandler.GetAll)
+		txnRoutes.PUT("/:username/:id/tags", txnHandler.UpdateTags)
+	}
+
+	tagHandler := NewTagHandler(application.Services.Tag)
+	tagRoutes := router.Group("/api/v1/tags")
+	{
+		tagRoutes.GET("/", tagHandler.GetAll)
+	}
 	err := router.Run(":" + application.Config.Server.Port)
 	if err != nil {
 		log.Panic(err)

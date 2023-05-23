@@ -82,34 +82,97 @@ func NewUserService(userRepository repository.User) User {
 }
 
 type txn struct {
-	txnRepository repository.Txn
+	txnRepository  repository.Txn
+	userService    User
+	accountService Account
+	tagService     Tag
 }
 
-func (t txn) CreateTxn(txn entity.Txn) (entity.Txn, error) {
-	return t.txnRepository.CreateTxn(txn)
+func (t txn) CreateTxn(txnIn entity.TxnIn) (*entity.TxnOut, error) {
+	_, err := t.userService.Get(txnIn.Username)
+	if err != nil {
+		return nil, err
+	}
+	_, err = t.accountService.Get(txnIn.Username, *txnIn.FromAccount)
+	if err != nil {
+		return nil, err
+	}
+
+	if txnIn.ToAccount != nil {
+		_, err = t.accountService.Get(txnIn.Username, *txnIn.ToAccount)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	txn, err := t.txnRepository.CreateTxn(txnIn)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		_, err := t.tagService.UpsertTags(txnIn.Tags...)
+		if err != nil {
+			fmt.Printf("Error while upserting tags %+v\n", err)
+		}
+	}()
+	return txn.ToOut(), nil
 }
 
-func (t txn) Get(id string) (entity.Txn, error) {
-	return t.txnRepository.Get(id)
+func (t txn) Get(username string, id string) (*entity.TxnOut, error) {
+	txn, err := t.txnRepository.Get(username, id)
+	if err != nil {
+		return nil, err
+	}
+	return txn.ToOut(), nil
 }
 
-func (t txn) GetAll(userID string) ([]entity.Txn, error) {
-	return t.txnRepository.GetAll(userID)
+func (t txn) GetAll(username string) ([]entity.TxnOut, error) {
+	_, err := t.userService.Get(username)
+	if err != nil {
+		return nil, err
+	}
+	txn, err := t.txnRepository.GetAll(username)
+	if err != nil {
+		return nil, err
+	}
+	var txnOut []entity.TxnOut
+	for _, txn := range txn {
+		txnOut = append(txnOut, *txn.ToOut())
+	}
+	return txnOut, nil
 }
 
-func (t txn) UpdateTags(id string, tags ...entity.Tag) (entity.Txn, error) {
-	return t.txnRepository.UpdateTags(id, tags...)
+func (t txn) UpdateTags(username string, id string, tags ...string) (*entity.TxnOut, error) {
+	txn, err := t.txnRepository.UpdateTags(username, id, tags...)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		_, err := t.tagService.UpsertTags(tags...)
+		if err != nil {
+			fmt.Printf("Error while upserting tags %+v\n", err)
+		}
+	}()
+	return txn.ToOut(), nil
 }
 
-func NewTxnService(txnRepository repository.Txn) Txn {
-	return &txn{txnRepository}
+func NewTxnService(txnRepository repository.Txn, userService User, tagService Tag, accountService Account) Txn {
+	return &txn{txnRepository: txnRepository, userService: userService, tagService: tagService, accountService: accountService}
 }
 
 type tag struct {
 	tagRepository repository.Tag
 }
 
-func (t tag) CreateTag(name string) (entity.Tag, error) {
+func (t tag) UpsertTags(names ...string) ([]entity.Tag, error) {
+	return t.tagRepository.UpsertTags(names...)
+}
+
+func (t tag) GetAll() ([]entity.Tag, error) {
+	return t.tagRepository.GetAll()
+}
+
+func (t tag) CreateTag(name string) (*entity.Tag, error) {
 	return t.tagRepository.CreateTag(name)
 }
 

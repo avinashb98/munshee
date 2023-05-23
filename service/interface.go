@@ -14,12 +14,14 @@ type Account interface {
 }
 
 type Txn interface {
-	CreateTxn(txn entity.Txn) (entity.Txn, error)
-	Get(id string) (entity.Txn, error)
-	GetAll(userID string) ([]entity.Txn, error)
-	UpdateTags(id string, tags ...entity.Tag) (entity.Txn, error)
+	CreateTxn(txnIn entity.TxnIn) (*entity.TxnOut, error)
+	Get(username string, id string) (*entity.TxnOut, error)
+	GetAll(username string) ([]entity.TxnOut, error)
+	UpdateTags(username string, id string, tags ...string) (*entity.TxnOut, error)
 }
 
 type Tag interface {
-	CreateTag(name string) (entity.Tag, error)
+	CreateTag(name string) (*entity.Tag, error)
+	UpsertTags(names ...string) ([]entity.Tag, error)
+	GetAll() ([]entity.Tag, error)
 }
