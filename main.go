@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/avinashb98/munshee/application"
-	"github.com/avinashb98/munshee/server"
+	"github.com/avinashb98/munshee/server/http"
 )
 
 func main() {
 	app := application.Get()
-	server.StartHTTP(app)
+	http.StartServer(app)
 }

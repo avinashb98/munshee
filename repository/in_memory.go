@@ -4,13 +4,16 @@ import (
 	"fmt"
 	"github.com/avinashb98/munshee/entity"
 	"github.com/google/uuid"
+	"time"
 )
 
 type usersStore struct {
 	users map[string]entity.User
 }
 
-var us = usersStore{}
+var us = usersStore{
+	users: make(map[string]entity.User),
+}
 
 type userInMemory struct{}
 
@@ -20,11 +23,14 @@ func (u userInMemory) CreateUser(username string, name string, email string) (*e
 		return nil, fmt.Errorf("user with username %s already exists", username)
 	}
 
+	now := time.Now().Unix()
 	newUser := entity.User{
-		Username: username,
-		Name:     name,
-		Email:    email,
-		ID:       uuid.New().String(),
+		Username:  username,
+		Name:      name,
+		Email:     email,
+		ID:        uuid.New().String(),
+		CreatedAt: now,
+		UpdatedAt: now,
 	}
 	us.users[username] = newUser
 	return &newUser, nil
