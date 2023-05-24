@@ -106,3 +106,127 @@ func NewAccountMongoRepository(mongoConfig config.Mongo) Account {
 		mongoConfig: mongoConfig,
 	}
 }
+
+type txnMongo struct {
+	mongoConfig config.Mongo
+}
+
+func (t txnMongo) CreateTxn(txnIn entity.TxnIn) (*entity.Txn, error) {
+	newTxn := NewTxnMongo(txnIn)
+	err := mgm.Coll(newTxn).Create(newTxn)
+	return newTxn.ToEntity(), err
+}
+
+func (t txnMongo) Get(username string, id string) (*entity.Txn, error) {
+	ctx := mgm.Ctx()
+	foundTxn := &TxnMongo{}
+	err := mgm.Coll(foundTxn).FirstWithCtx(ctx, bson.M{"username": username, "id": id}, foundTxn)
+	if err != nil {
+		if strings.Contains(err.Error(), "no documents") {
+			return nil, fmt.Errorf("txn not found")
+		}
+		return nil, err
+	}
+	return foundTxn.ToEntity(), nil
+}
+
+func (t txnMongo) GetAll(username string) ([]entity.Txn, error) {
+	ctx := mgm.Ctx()
+	foundTxns := make([]TxnMongo, 0)
+	err := mgm.Coll(&TxnMongo{}).SimpleFindWithCtx(ctx, &foundTxns, bson.M{"username": username})
+	if err != nil {
+		return nil, err
+	}
+	txns := make([]entity.Txn, 0)
+	for _, txn := range foundTxns {
+		txns = append(txns, *txn.ToEntity())
+	}
+	return txns, nil
+}
+
+func (t txnMongo) UpdateTags(username string, id string, tags ...string) (*entity.Txn, error) {
+	ctx := mgm.Ctx()
+	foundTxn := &TxnMongo{}
+	err := mgm.Coll(foundTxn).FirstWithCtx(ctx, bson.M{"username": username, "id": id}, foundTxn)
+	if err != nil {
+		if strings.Contains(err.Error(), "no documents") {
+			return nil, fmt.Errorf("txn not found")
+		}
+		return nil, err
+	}
+	foundTxn.Tags = tags
+	err = mgm.Coll(foundTxn).Update(foundTxn)
+	return foundTxn.ToEntity(), err
+}
+
+func NewTxnMongoRepository(mongoConfig config.Mongo) Txn {
+	return &txnMongo{
+		mongoConfig: mongoConfig,
+	}
+}
+
+type tagMongo struct {
+	mongoConfig config.Mongo
+}
+
+func (t tagMongo) CreateTag(name string) (*entity.Tag, error) {
+	_, err := t.get(name)
+	if err == nil {
+		return nil, fmt.Errorf("tag with name %s already exists", name)
+	}
+
+	newTag := NewTagMongo(name)
+	err = mgm.Coll(newTag).Create(newTag)
+	return newTag.ToEntity(), err
+}
+
+func (t tagMongo) get(name string) (*entity.Tag, error) {
+	ctx := mgm.Ctx()
+	foundTag := &TagMongo{}
+	err := mgm.Coll(foundTag).FirstWithCtx(ctx, bson.M{"name": name}, foundTag)
+	if err != nil {
+		if strings.Contains(err.Error(), "no documents") {
+			return nil, fmt.Errorf("tag not found")
+		}
+		return nil, err
+	}
+	return foundTag.ToEntity(), nil
+}
+
+func (t tagMongo) UpsertTags(names ...string) ([]entity.Tag, error) {
+	var uniqueTags []entity.Tag
+	for _, name := range names {
+		foundTag, err := t.get(name)
+		if err == nil {
+			uniqueTags = append(uniqueTags, *foundTag)
+			continue
+		}
+		newTag := NewTagMongo(name)
+		err = mgm.Coll(newTag).Create(newTag)
+		if err != nil {
+			return nil, err
+		}
+		uniqueTags = append(uniqueTags, *newTag.ToEntity())
+	}
+	return uniqueTags, nil
+}
+
+func (t tagMongo) GetAll() ([]entity.Tag, error) {
+	ctx := mgm.Ctx()
+	foundTags := make([]TagMongo, 0)
+	err := mgm.Coll(&TagMongo{}).SimpleFindWithCtx(ctx, &foundTags, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	tags := make([]entity.Tag, 0)
+	for _, tag := range foundTags {
+		tags = append(tags, *tag.ToEntity())
+	}
+	return tags, nil
+}
+
+func NewTagMongoRepository(mongoConfig config.Mongo) Tag {
+	return &tagMongo{
+		mongoConfig: mongoConfig,
+	}
+}

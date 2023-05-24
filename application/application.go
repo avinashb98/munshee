@@ -33,11 +33,13 @@ func Get() *Application {
 	accountMongoRepo := repository.NewAccountMongoRepository(c.Mongo)
 	accountSvc := service.NewAccountService(accountMongoRepo, userSvc)
 
-	tagRepo := repository.NewTagInmemory()
-	tagSvc := service.NewTagService(tagRepo)
+	//tagRepo := repository.NewTagInmemory()
+	tagMongoRepo := repository.NewTagMongoRepository(c.Mongo)
+	tagSvc := service.NewTagService(tagMongoRepo)
 
-	txnRepo := repository.NewTxnInmemory()
-	txnSvc := service.NewTxnService(txnRepo, userSvc, tagSvc, accountSvc)
+	//txnRepo := repository.NewTxnInmemory()
+	txnMongoRepo := repository.NewTxnMongoRepository(c.Mongo)
+	txnSvc := service.NewTxnService(txnMongoRepo, userSvc, tagSvc, accountSvc)
 
 	application := Application{
 		Services: Services{
