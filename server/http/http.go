@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/avinashb98/munshee/application"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
 )
@@ -10,6 +11,7 @@ var router = gin.Default()
 
 func StartServer(application *application.Application) {
 	router.Use(gin.Recovery())
+	router.Use(cors.Default())
 	router.GET("/status", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"status": "OK",

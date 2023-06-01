@@ -100,6 +100,7 @@ type TxnMongo struct {
 	Tags        []string `bson:"tags"`
 	CreatedAt   int64    `bson:"created_at"`
 	UpdatedAt   int64    `bson:"updated_at"`
+	Emoji       string   `bson:"emoji"`
 }
 
 func (t *TxnMongo) ToEntity() *entity.Txn {
@@ -113,6 +114,7 @@ func (t *TxnMongo) ToEntity() *entity.Txn {
 		Tags:        t.Tags,
 		CreatedAt:   t.CreatedAt,
 		UpdatedAt:   t.UpdatedAt,
+		Emoji:       t.Emoji,
 	}
 }
 
@@ -127,5 +129,6 @@ func NewTxnMongo(txnIn entity.TxnIn) *TxnMongo {
 		Tags:        txnIn.Tags,
 		CreatedAt:   time.Now().Unix(),
 		UpdatedAt:   time.Now().Unix(),
+		Emoji:       txnIn.Emoji,
 	}
 }

@@ -7,6 +7,7 @@ type TxnIn struct {
 	Amount      float64  `json:"amount"`
 	Tags        []string `json:"tags"`
 	Username    string   `json:"username"`
+	Emoji       string   `json:"emoji"`
 }
 
 type Txn struct {
@@ -17,6 +18,7 @@ type Txn struct {
 	Username    string
 	Amount      float64
 	Tags        []string
+	Emoji       string
 	CreatedAt   int64
 	UpdatedAt   int64
 }
@@ -31,6 +33,7 @@ func (t Txn) ToOut() *TxnOut {
 		Username:    t.Username,
 		CreatedAt:   t.CreatedAt,
 		UpdatedAt:   t.UpdatedAt,
+		Emoji:       t.Emoji,
 	}
 }
 
@@ -43,49 +46,5 @@ type TxnOut struct {
 	Username    string   `json:"username"`
 	CreatedAt   int64    `json:"created_at"`
 	UpdatedAt   int64    `json:"updated_at"`
+	Emoji       string   `json:"emoji"`
 }
-
-type TxnOption func(*Txn)
-
-//func WithDescription(description string) TxnOption {
-//	return func(t *Txn) {
-//		t.Description = description
-//	}
-//}
-//
-//func WithToAccount(toAccount *string) TxnOption {
-//	return func(t *Txn) {
-//		t.ToAccount = toAccount
-//	}
-//}
-//
-//func WithFromAccount(fromAccount *string) TxnOption {
-//	return func(t *Txn) {
-//		t.FromAccount = fromAccount
-//	}
-//}
-//
-//func WithTags(tags ...Tag) TxnOption {
-//	return func(t *Txn) {
-//		var tagsStr []string
-//		for _, tag := range tags {
-//			tagsStr = append(tagsStr, tag.Name)
-//		}
-//		t.Tags = tagsStr
-//	}
-//}
-//
-//func WithAmount(amount float64) TxnOption {
-//	return func(t *Txn) {
-//		t.Amount = amount
-//	}
-//}
-//
-//func NewTxn(userID string, opts ...TxnOption) Txn {
-//	txn := Txn{Username: userID, ID: uuid.New().String()}
-//
-//	for _, opt := range opts {
-//		opt(&txn)
-//	}
-//	return txn
-//}
