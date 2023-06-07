@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/avinashb98/munshee/application"
 	"github.com/avinashb98/munshee/server/http"
 	"github.com/joho/godotenv"
@@ -9,7 +10,7 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
 	}
 	app := application.Get()
 	http.StartServer(app)
