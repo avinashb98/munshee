@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
+	"os"
 )
 
 var router = gin.Default()
@@ -15,6 +16,7 @@ func StartServer(application *application.Application) {
 	router.GET("/status", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"status": "OK",
+			"test":   os.Getenv("TEST"),
 		})
 	})
 
@@ -47,7 +49,7 @@ func StartServer(application *application.Application) {
 	{
 		tagRoutes.GET("/", tagHandler.GetAll)
 	}
-	err := router.Run(":" + application.Config.Server.Port)
+	err := router.Run("0.0.0.0:" + application.Config.Server.Port)
 	if err != nil {
 		log.Panic(err)
 	}

@@ -48,7 +48,7 @@ func Get() Config {
 }
 
 func getMongoConfig() (*Mongo, error) {
-	host := os.Getenv("MONGODB_HOST_URI")
+	host := os.Getenv("MONGODB_HOST")
 	if host == "" {
 		return nil, fmt.Errorf("missing mongodb host uri in env")
 	}
